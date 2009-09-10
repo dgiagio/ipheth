@@ -1,4 +1,10 @@
 iPhone USB Ethernet Driver for Linux
+------------------------------------
+
+Directory listing:
+
+/ipheth-driver	- Kernel driver
+/ipheth-pair	- Device pairing program.
 
 For more info: http://giagio.com/wiki/moin.cgi/iPhoneEthernetDriver
 
