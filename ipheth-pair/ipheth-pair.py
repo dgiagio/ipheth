@@ -1,38 +1,178 @@
 #!/usr/bin/env python
 
-from libiphone.iPhone import *
+# ipheth-pair.py - Apple iPhone USB Ethernet pairing program
+# 
+# Copyright (c) 2009 Diego Giagio <diego@giagio.com>
+# All rights reserved.
+
 import sys
 
-plist_validatepair = """<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict>	<key>PairRecord</key>	<dict>		<key>DeviceCertificate</key>		<data>		LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNOVENDQVIyZ0F3SUJB		Z0lCQURBTkJna3Foa2lHOXcwQkFRVUZBREFBTUI0WERUQTVNRGd3TWpBd01U		RXkKTWxvWERURTVNRGN6TVRBd01URXlNbG93QURDQm5qQU5CZ2txaGtpRzl3		MEJBUUVGQUFPQmpBQXdnWWdDZ1lCUApmMlZ4eEx4TTFhT0d5M0RuSjR5Tito		c2kvMmNlWUN5ODMxVTJZQ04wbHlWcjhoKzNiSHQ3bUNpa0JUVjZ4a01JCmU4		K1MyT2VhM1MrbGhDQ0laN250NmkzRDlEeC9NVXR5U29kUzNEalpVKzl5WjU0		ak11Y3ZDOGpOTExOTDZkYUMKY2VMTUdRN2JHWmdLeE9KZW9mMENRdVpwYk9y		dUJQL0pzM2NpcjFlRTJRSURBUUFCb3o4d1BUQU1CZ05WSFJNQgpBZjhFQWpB		QU1CMEdBMVVkRGdRV0JCUkVMSWVjY0VPZ1ZzMm1YUCtIL1FwSDJNN1pTVEFP		QmdOVkhROEJBZjhFCkJBTUNCYUF3RFFZSktvWklodmNOQVFFRkJRQURnZ0VC		QUw5UkJEcldGcTFQYmNPdCtPV1IzTk9PblJRSmNTengKMkpCZndhQ0JHYUhq		L1NTZkRKN2hxTnpsMEZOM25rd3ZVZUxVQTVyUFJyVzRmaDFhY3Ywd2NWNEwv		KzF4bUI1QwpnbExjSng2WXUzaGp1dUNTczQxcUVZSXpPdnJ5b1haT25sQ1l4		TEdpNkE3VDhadi94T2hwVm12cElGMDZlMXFtCkJBV3RhNnpOSTl4T25hNlVN		OWJzc3BZVlBVdFlOWmsrbm9QYXJqbHNiNDhpMmd5bWdXd1BYeTQvTEFKNkdE		QWcKQzVaSGZuVHpmOXJTMzR3RVdWMjhOUjJyOXQ3dWFxM1ljNWxiQ3hDN09E		ZGUrZ3NNZXZmQm5RK0Q2Qzk2bjhHNQpTTWlzeG1XVEJsOElwa1ROc1FyUzJM		alFReHdFWXFzWU9IRWh4SXpKRVBhUFJ5WWN0UzJJS3FZPQotLS0tLUVORCBD		RVJUSUZJQ0FURS0tLS0tCg==		</data>		<key>HostCertificate</key>		<data>		LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN1akNDQWFLZ0F3SUJB		Z0lCQURBTkJna3Foa2lHOXcwQkFRVUZBREFBTUI0WERUQTVNRGd3TWpBd01U		RXkKTWxvWERURTVNRGN6TVRBd01URXlNbG93QURDQ0FTSXdEUVlKS29aSWh2		Y05BUUVCQlFBRGdnRVBBRENDQVFvQwpnZ0VCQU9sZTZBQXVBaEgxdjBwNDdP		S0NZaFJNT290TnFEMUc4N0tNV3hJQnJTbXIvcW1BUlZvc3VNZWJBZkhZCmVC		YWVpWlNJMHpsNmJaQjF3VkpTUVZhcXZVUVBNeDYrWDNjMkNRamRScWF6WGdz		TWZaY2ZpaTkrbmdKU0RTT1oKL08yQm9SSVFTWHhTUUJ1SVpwY0d3aEhEcndw		VFVEUXc4c0pwdC9STmF6L0hzck1PS2tXOGxUQjNCOEVWYzgrZwozUlpQNnF3		c01ISDR3bTM4STJpRFdZNzRCTjZVdEhqQk9JaVlKUW4rd2UzZ0tNTVRjdU5q		TS8xdytwbElBN1VjCjRnMkgrUmIrN2g0ZHJzQU9KbmFXWnZ6MUw2UGVsRlVx		S0E0Snc2L2Fja1pxcnR2VFBVd0pybWlpekNUa2RiZFUKSXptNXYyWEZHOHF0		QzVremVISG9TK3YwaEJVQ0F3RUFBYU0vTUQwd0RBWURWUjBUQVFIL0JBSXdB		REFkQmdOVgpIUTRFRmdRVU9IdmNuOWZUZXNKdDgwUnM2Q2o3NWV1TWcyRXdE		Z1lEVlIwUEFRSC9CQVFEQWdXZ01BMEdDU3FHClNJYjNEUUVCQlFVQUE0SUJB		UUNqS05JLzh5bE1hRzlpaU14SFFHSER4Z2liZjU5MjdyTWNYdkdMSlk1VzZF		aEYKVDR5UVVNVnphaTg4cC93VEJOTC9sbEM4YmF6U0R5Y2orRWVZN1pmaUlP		WXJmS1VkS1VHZlAwNHhGOGFwWUZtNgpSaDRSVmZUeEJNVTdaaEEzTG9VMDlR		ZGozNnFlQVUvNS9xamt0endCY0VUeTMrQkFDbERmbEZ3WUlzbTcxdE45Cngz		ZWpVT0JOdzZLNWxUWUVjMzdIM3lhMWlOajk5NmVzNFhGbHdXZXdnL1BWUC9P		QjFuQi8zTVBlUU5FVXYwejUKaDZxakptaWJZRWVBZnkwWlRqcGtmSXdrblF0		OGlLVVdIdGcxWkQ1ckFpNHVjVDdSSXROU01SR3Zuc3lXQUxoSgpVS3p1Q1Zk		ank0NGZnUDRJYXdTd0ZoV3hLWS9udW1sM0xxNnNUZnRsCi0tLS0tRU5EIENF		UlRJRklDQVRFLS0tLS0K		</data>		<key>HostID</key>		<string>30020357-993885437260361964</string>		<key>RootCertificate</key>		<data>		LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNyVENDQVpXZ0F3SUJB		Z0lCQURBTkJna3Foa2lHOXcwQkFRVUZBREFBTUI0WERUQTVNRGd3TWpBd01U		RXkKTWxvWERURTVNRGN6TVRBd01URXlNbG93QURDQ0FTSXdEUVlKS29aSWh2		Y05BUUVCQlFBRGdnRVBBRENDQVFvQwpnZ0VCQU14TDNJdXlPS2RuWjduMktG		SUNNVVkyemdmVEpqeFBabi9EemU3V3BWWGNYYkFJWEJHUCt2VWFLV1BYCmtZ		UWpFcnVJUzdjVTdNb3UzYXl3UHhsZXpXQmRWekJKZU5aeWZWOUhwMEh3OS9T		SzZxWjFKOEpzK0I3WFZxMVUKQjBoTmh5VHRZQktRejl6bzQ4Z0ZvZmlNMDRx		RS92SjRydnhrV1FJa2E4OHFWRFNQYUVoMHNqem51bWxSeWY2VQpRRWJUdUhj		VzhDWWk5Y0w1OFkxaGlHY2NFOUhiNitBQ1pnelp1OTltRVVibStHUlZOeEt5		SkhUQlpzbEdBeXZCCkU5LzY5TUZLR3VyK3JMeUxSUzJQdEIrZHNqdmVyZ0w3		RmQwSFl5ZGRrVTBoOXBUd3ptTkVTZXlNQUJNMFNzbzUKQWxWSTB3YTRGaDlz		R21KUUE3YjNkalBVamxjQ0F3RUFBYU15TURBd0R3WURWUjBUQVFIL0JBVXdB		d0VCL3pBZApCZ05WSFE0RUZnUVVHdTVHNmEwN2MwSEhTWERqRitiT1o2Ri96		cDh3RFFZSktvWklodmNOQVFFRkJRQURnZ0VCCkFLNjhVbXRIUFdwMnVrZUgv		V29KY2l3RFNOZHkyVGl3Y2tyS3RWbDcxc2JPYUpIOTBUUmRuaHZHZ0x5cVdm		RXMKUUhGdzJielFzYUN1bXZ4R3JHTmNKbzFZdUpIR2N4VXgzQnBSU3NTa3Bx		QmlZSUN4Q3FxQzlSSlBkd1Z4c1NaZApsdVNFVm5PNXQwUHdxRndFM0ZUQ1l1		Z0RIdm90a0RSS1AyVzYzcVRVOEhydHVKbkNrYmVxdTJXV2V4NFVQTzlTCmhk		T1pvSnRGRjVtZHJHSzVtU3J0d2lXYmhWSjNMMGs3T1B6NkRpY3M1SkxyTDFJ		WDQvMCtBcUxVc1N3dEpTZnIKdWg1Q2UrQ1Z1cW4xSlpzdjZ2M21Vaml4NnZi		cEpZQXl2RFQrYm1ra1JjUHNXTEJkY1g0NFBrME84UWdYOHBEVgo2cHh0STFD		bkhXOFFqZnAwRDNERW1ydz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=</data>	</dict>	<key>ProtocolVersion</key>	<string>2</string>	<key>Request</key>	<string>ValidatePair</string></dict></plist>
-"""
+from libiphone.iPhone import *
+from base64 import b64decode
+from pyasn1.codec.ber import decoder
+from random import randint
+from M2Crypto import *
 
-plist_pair = """<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd"><plist version="1.0"><dict>	<key>Label</key><string>XCode</string><key>PairRecord</key>	<dict>		<key>DeviceCertificate</key>		<data>		LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNOVENDQVIyZ0F3SUJB		Z0lCQURBTkJna3Foa2lHOXcwQkFRVUZBREFBTUI0WERUQTVNRGd3TWpBd01U		RXkKTWxvWERURTVNRGN6TVRBd01URXlNbG93QURDQm5qQU5CZ2txaGtpRzl3		MEJBUUVGQUFPQmpBQXdnWWdDZ1lCUApmMlZ4eEx4TTFhT0d5M0RuSjR5Tito		c2kvMmNlWUN5ODMxVTJZQ04wbHlWcjhoKzNiSHQ3bUNpa0JUVjZ4a01JCmU4		K1MyT2VhM1MrbGhDQ0laN250NmkzRDlEeC9NVXR5U29kUzNEalpVKzl5WjU0		ak11Y3ZDOGpOTExOTDZkYUMKY2VMTUdRN2JHWmdLeE9KZW9mMENRdVpwYk9y		dUJQL0pzM2NpcjFlRTJRSURBUUFCb3o4d1BUQU1CZ05WSFJNQgpBZjhFQWpB		QU1CMEdBMVVkRGdRV0JCUkVMSWVjY0VPZ1ZzMm1YUCtIL1FwSDJNN1pTVEFP		QmdOVkhROEJBZjhFCkJBTUNCYUF3RFFZSktvWklodmNOQVFFRkJRQURnZ0VC		QUw5UkJEcldGcTFQYmNPdCtPV1IzTk9PblJRSmNTengKMkpCZndhQ0JHYUhq		L1NTZkRKN2hxTnpsMEZOM25rd3ZVZUxVQTVyUFJyVzRmaDFhY3Ywd2NWNEwv		KzF4bUI1QwpnbExjSng2WXUzaGp1dUNTczQxcUVZSXpPdnJ5b1haT25sQ1l4		TEdpNkE3VDhadi94T2hwVm12cElGMDZlMXFtCkJBV3RhNnpOSTl4T25hNlVN		OWJzc3BZVlBVdFlOWmsrbm9QYXJqbHNiNDhpMmd5bWdXd1BYeTQvTEFKNkdE		QWcKQzVaSGZuVHpmOXJTMzR3RVdWMjhOUjJyOXQ3dWFxM1ljNWxiQ3hDN09E		ZGUrZ3NNZXZmQm5RK0Q2Qzk2bjhHNQpTTWlzeG1XVEJsOElwa1ROc1FyUzJM		alFReHdFWXFzWU9IRWh4SXpKRVBhUFJ5WWN0UzJJS3FZPQotLS0tLUVORCBD		RVJUSUZJQ0FURS0tLS0tCg==		</data>		<key>HostCertificate</key>		<data>		LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUN1akNDQWFLZ0F3SUJB		Z0lCQURBTkJna3Foa2lHOXcwQkFRVUZBREFBTUI0WERUQTVNRGd3TWpBd01U		RXkKTWxvWERURTVNRGN6TVRBd01URXlNbG93QURDQ0FTSXdEUVlKS29aSWh2		Y05BUUVCQlFBRGdnRVBBRENDQVFvQwpnZ0VCQU9sZTZBQXVBaEgxdjBwNDdP		S0NZaFJNT290TnFEMUc4N0tNV3hJQnJTbXIvcW1BUlZvc3VNZWJBZkhZCmVC		YWVpWlNJMHpsNmJaQjF3VkpTUVZhcXZVUVBNeDYrWDNjMkNRamRScWF6WGdz		TWZaY2ZpaTkrbmdKU0RTT1oKL08yQm9SSVFTWHhTUUJ1SVpwY0d3aEhEcndw		VFVEUXc4c0pwdC9STmF6L0hzck1PS2tXOGxUQjNCOEVWYzgrZwozUlpQNnF3		c01ISDR3bTM4STJpRFdZNzRCTjZVdEhqQk9JaVlKUW4rd2UzZ0tNTVRjdU5q		TS8xdytwbElBN1VjCjRnMkgrUmIrN2g0ZHJzQU9KbmFXWnZ6MUw2UGVsRlVx		S0E0Snc2L2Fja1pxcnR2VFBVd0pybWlpekNUa2RiZFUKSXptNXYyWEZHOHF0		QzVremVISG9TK3YwaEJVQ0F3RUFBYU0vTUQwd0RBWURWUjBUQVFIL0JBSXdB		REFkQmdOVgpIUTRFRmdRVU9IdmNuOWZUZXNKdDgwUnM2Q2o3NWV1TWcyRXdE		Z1lEVlIwUEFRSC9CQVFEQWdXZ01BMEdDU3FHClNJYjNEUUVCQlFVQUE0SUJB		UUNqS05JLzh5bE1hRzlpaU14SFFHSER4Z2liZjU5MjdyTWNYdkdMSlk1VzZF		aEYKVDR5UVVNVnphaTg4cC93VEJOTC9sbEM4YmF6U0R5Y2orRWVZN1pmaUlP		WXJmS1VkS1VHZlAwNHhGOGFwWUZtNgpSaDRSVmZUeEJNVTdaaEEzTG9VMDlR		ZGozNnFlQVUvNS9xamt0endCY0VUeTMrQkFDbERmbEZ3WUlzbTcxdE45Cngz		ZWpVT0JOdzZLNWxUWUVjMzdIM3lhMWlOajk5NmVzNFhGbHdXZXdnL1BWUC9P		QjFuQi8zTVBlUU5FVXYwejUKaDZxakptaWJZRWVBZnkwWlRqcGtmSXdrblF0		OGlLVVdIdGcxWkQ1ckFpNHVjVDdSSXROU01SR3Zuc3lXQUxoSgpVS3p1Q1Zk		ank0NGZnUDRJYXdTd0ZoV3hLWS9udW1sM0xxNnNUZnRsCi0tLS0tRU5EIENF		UlRJRklDQVRFLS0tLS0K		</data>		<key>HostID</key>		<string>30020357-993885437260361964</string>		<key>RootCertificate</key>		<data>		LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUNyVENDQVpXZ0F3SUJB		Z0lCQURBTkJna3Foa2lHOXcwQkFRVUZBREFBTUI0WERUQTVNRGd3TWpBd01U		RXkKTWxvWERURTVNRGN6TVRBd01URXlNbG93QURDQ0FTSXdEUVlKS29aSWh2		Y05BUUVCQlFBRGdnRVBBRENDQVFvQwpnZ0VCQU14TDNJdXlPS2RuWjduMktG		SUNNVVkyemdmVEpqeFBabi9EemU3V3BWWGNYYkFJWEJHUCt2VWFLV1BYCmtZ		UWpFcnVJUzdjVTdNb3UzYXl3UHhsZXpXQmRWekJKZU5aeWZWOUhwMEh3OS9T		SzZxWjFKOEpzK0I3WFZxMVUKQjBoTmh5VHRZQktRejl6bzQ4Z0ZvZmlNMDRx		RS92SjRydnhrV1FJa2E4OHFWRFNQYUVoMHNqem51bWxSeWY2VQpRRWJUdUhj		VzhDWWk5Y0w1OFkxaGlHY2NFOUhiNitBQ1pnelp1OTltRVVibStHUlZOeEt5		SkhUQlpzbEdBeXZCCkU5LzY5TUZLR3VyK3JMeUxSUzJQdEIrZHNqdmVyZ0w3		RmQwSFl5ZGRrVTBoOXBUd3ptTkVTZXlNQUJNMFNzbzUKQWxWSTB3YTRGaDlz		R21KUUE3YjNkalBVamxjQ0F3RUFBYU15TURBd0R3WURWUjBUQVFIL0JBVXdB		d0VCL3pBZApCZ05WSFE0RUZnUVVHdTVHNmEwN2MwSEhTWERqRitiT1o2Ri96		cDh3RFFZSktvWklodmNOQVFFRkJRQURnZ0VCCkFLNjhVbXRIUFdwMnVrZUgv		V29KY2l3RFNOZHkyVGl3Y2tyS3RWbDcxc2JPYUpIOTBUUmRuaHZHZ0x5cVdm		RXMKUUhGdzJielFzYUN1bXZ4R3JHTmNKbzFZdUpIR2N4VXgzQnBSU3NTa3Bx		QmlZSUN4Q3FxQzlSSlBkd1Z4c1NaZApsdVNFVm5PNXQwUHdxRndFM0ZUQ1l1		Z0RIdm90a0RSS1AyVzYzcVRVOEhydHVKbkNrYmVxdTJXV2V4NFVQTzlTCmhk		T1pvSnRGRjVtZHJHSzVtU3J0d2lXYmhWSjNMMGs3T1B6NkRpY3M1SkxyTDFJ		WDQvMCtBcUxVc1N3dEpTZnIKdWg1Q2UrQ1Z1cW4xSlpzdjZ2M21Vaml4NnZi		cEpZQXl2RFQrYm1ra1JjUHNXTEJkY1g0NFBrME84UWdYOHBEVgo2cHh0STFD		bkhXOFFqZnAwRDNERW1ydz0KLS0tLS1FTkQgQ0VSVElGSUNBVEUtLS0tLQo=</data>	</dict>	<key>Request</key>	<string>Pair</string></dict></plist>
-"""
+def lockdownd_get_val(lckd, key, string):
+    plist = PListNode(PLIST_DICT)
+    plist.add_sub_key(key)
+    plist.add_sub_string(string)
+    plist.add_sub_key("Request")
+    plist.add_sub_string("GetValue")
 
-phone = iPhone()
-if not phone.init_device():
-    print "Unable to initialize device"
-    sys.exit(1)
+    lckd.send(plist)
+    plist = lckd.receive()
+    res = plist.get_dict_el_from_key("Result").as_string()
+    if res != "Success":
+        print "lockdownd_get_val(%s, %s): %s" % (key, string, res)
+        return None
+    res = plist.get_dict_el_from_key("Value").as_data()
+    return res
 
-lckd = phone.get_lockdown_client()
+def lockdownd_validate_pair(lckd, rootcert, devcert, hostcert, hostid):
+    plistkeys = PListNode(PLIST_DICT)
+    plistkeys.add_sub_key("DeviceCertificate")
+    plistkeys.add_sub_data(devcert)
+    plistkeys.add_sub_key("HostCertificate")
+    plistkeys.add_sub_data(hostcert)
+    plistkeys.add_sub_key("HostID")
+    plistkeys.add_sub_string(hostid)
+    plistkeys.add_sub_key("Rootcertificate")
+    plistkeys.add_sub_data(rootcert)
 
-plist = PListNode(PLIST_DICT)
-plist.from_xml(plist_validatepair);
-lckd.send(plist)
-plist = lckd.receive()
-res = plist.get_dict_el_from_key("Result").as_string()
-if res != "Success":
-    print "ValidatePair: %s" % res
-    sys.exit(1)
+    plist = PListNode(PLIST_DICT)
+    plist.add_sub_key("PairRecord")
+    plist.add_sub_node(plistkeys)
+    plist.add_sub_key("ProtocolVersion")
+    plist.add_sub_string("2")
+    plist.add_sub_key("Request")
+    plist.add_sub_string("ValidatePair")
 
-plist = PListNode(PLIST_DICT)
-plist.from_xml(plist_pair);
-lckd.send(plist)
-plist = lckd.receive()
-res = plist.get_dict_el_from_key("Result").as_string()
-if res != "Success":
-    print "Pair: %s" % res
-    sys.exit(1)
+    lckd.send(plist)
+    plist = lckd.receive()
+    res = plist.get_dict_el_from_key("Result").as_string()
+    return res
 
-# Success
-sys.exit(0)
+def lockdownd_pair(lckd, rootcert, devcert, hostcert, hostid):
+    plistkeys = PListNode(PLIST_DICT)
+    plistkeys.add_sub_key("DeviceCertificate")
+    plistkeys.add_sub_data(devcert)
+    plistkeys.add_sub_key("HostCertificate")
+    plistkeys.add_sub_data(hostcert)
+    plistkeys.add_sub_key("HostID")
+    plistkeys.add_sub_string(hostid)
+    plistkeys.add_sub_key("Rootcertificate")
+    plistkeys.add_sub_data(rootcert)
+
+    plist = PListNode(PLIST_DICT)
+    plist.add_sub_key("PairRecord")
+    plist.add_sub_node(plistkeys)
+    plist.add_sub_key("ProtocolVersion")
+    plist.add_sub_string("2")
+    plist.add_sub_key("Request")
+    plist.add_sub_string("Pair")
+
+    lckd.send(plist)
+    plist = lckd.receive()
+    res = plist.get_dict_el_from_key("Result").as_string()
+    return res
+
+def gen_host_id():
+    chars = "ABCDEF0123456789"
+    host_id_len = 27
+    host_id = []
+    for i in range(0, host_id_len):
+        if i == 8:
+            host_id.append('-')
+        else:
+            host_id.append(chars[randint(0, len(chars) - 1)])
+    return "".join(host_id)
+
+def parse_pkey(pkeystr):
+    b64 = []
+    for l in pkeystr.split('\n'):
+        if l.startswith("---"):
+            continue
+        b64.append(l)
+    return b64decode("".join(b64))
+
+def to_mpint(buf):
+    return m2.bn_to_mpi(m2.hex_to_bn(buf))
+
+
+def main():    
+    phone = iPhone()
+    if not phone.init_device():
+        print "Unable to initialize device. Make sure your device is connected."
+        return 1
+
+    lckd = phone.get_lockdown_client()
+
+    # Retrieve device's public key
+    dev_pkeystr = lockdownd_get_val(lckd, "Key", "DevicePublicKey")
+    dev_asn1 = parse_pkey(dev_pkeystr)
+    seq = decoder.decode(dev_asn1)[0]
+    m = to_mpint(str(seq.getComponentByPosition(0)))
+    e = to_mpint(str(seq.getComponentByPosition(1)))
+    pkey = RSA.new_pub_key((e, m))
+
+    # Generate RootCertificate
+    root_ca_cert = X509.X509()
+    root_pkey = RSA.gen_key(1024, 65537)
+    pkroot = EVP.PKey()
+    pkroot.assign_rsa(root_pkey)
+    root_ca_cert.set_pubkey(pkroot)
+
+    # Generate DeviceCertificate
+    dev_cert = X509.X509()
+    pkdev = EVP.PKey()
+    pkdev.assign_rsa(pkey)
+    dev_cert.set_pubkey(pkdev)
+    dev_cert.sign(pkroot, "sha1")
+
+    # Generate HostCertificate
+    host_pkey = RSA.gen_key(1024, 65537)
+    host_cert = X509.X509()
+    pkhost = EVP.PKey()
+    pkhost.assign_rsa(host_pkey)
+    host_cert.set_pubkey(pkhost)
+    host_cert.sign(pkroot, "sha1")
+
+    #host_id = gen_host_id()
+    host_id = "30020357-993885437260361964"
+
+    # We retry pairing in case of error
+    nretry = 3
+
+    # Validate Pair
+    for i in range(1, nretry):
+        res = lockdownd_validate_pair(lckd, root_ca_cert.as_pem(),
+                                      dev_cert.as_pem(),
+                                      host_cert.as_pem(),
+                                      host_id)
+        if res == "Success":
+            break
+
+    if res != "Success":
+        print "ValidatePair: %s" % res
+        return 1
+    
+    # Pair
+    for i in range(1, nretry):
+        res = lockdownd_pair(lckd, root_ca_cert.as_pem(),
+                             dev_cert.as_pem(),
+                             host_cert.as_pem(),
+                             host_id)
+        if res == "Success":
+            break
+
+    if res != "Success":
+        print "Pair: %s" % res
+        return 1
+
+    # Success
+    print "Device successfully paired"
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())
