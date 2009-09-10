@@ -1,0 +1,17 @@
+iPhone USB Ethernet Driver for Linux
+------------------------------------
+
+Compile the driver:
+
+$ make
+
+Install the driver:
+
+$ make install
+
+You also need to copy ipheth-modprobe.conf to /etc/modprobe.d directory. This
+will ensure that the device pairing will always take place after module
+loading.
+
+For more info: http://giagio.com/wiki/moin.cgi/iPhoneEthernetDriver
+
