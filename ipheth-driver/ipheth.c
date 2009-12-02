@@ -399,6 +399,14 @@ static struct ethtool_ops ops = {
 	.get_link = ipheth_ethtool_op_get_link
 };
 
+static const struct net_device_ops ipheth_netdev_ops = {
+       .ndo_open = &ipheth_open,
+       .ndo_stop = &ipheth_close,
+       .ndo_start_xmit = &ipheth_tx,
+       .ndo_tx_timeout = &ipheth_tx_timeout,
+       .ndo_get_stats = &ipheth_stats,
+};
+
 static int ipheth_probe (struct usb_interface *intf,
 			 const struct usb_device_id *id)
 {
@@ -419,11 +427,7 @@ static int ipheth_probe (struct usb_interface *intf,
 	if (!netdev)
 		return -ENOMEM;
 
-        netdev->open = &ipheth_open;
-        netdev->stop = &ipheth_close;
-        netdev->hard_start_xmit = &ipheth_tx;
-        netdev->tx_timeout = &ipheth_tx_timeout;
-        netdev->get_stats = &ipheth_stats;
+       netdev->netdev_ops = &ipheth_netdev_ops;
 	netdev->watchdog_timeo = IPHETH_TX_TIMEOUT;
 
 	dev = netdev_priv(netdev);
