@@ -56,6 +56,7 @@
 #include <linux/workqueue.h>
 
 #define USB_VENDOR_APPLE        0x05ac
+#define USB_PRODUCT_IPHETH     0x1290
 #define USB_PRODUCT_IPHETH_3G   0x1292
 #define USB_PRODUCT_IPHETH_3GS  0x1294
 
@@ -78,6 +79,7 @@
 #define IPHETH_CARRIER_ON       0x04
 
 static struct usb_device_id ipheth_table [] = {
+       { USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH) },
 	{ USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH_3G) },
 	{ USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH_3GS) },
 	{ }
