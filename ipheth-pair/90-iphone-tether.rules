@@ -1,0 +1,3 @@
+# udev rules for pairing on tethered iphones
+
+ACTION=="add", SUBSYSTEM=="net", ID_USB_DRIVER=="ipheth", RUN+="ipheth-pair.py"
