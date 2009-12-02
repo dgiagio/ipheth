@@ -144,19 +144,6 @@ def main():
     # We retry pairing in case of error
     nretry = 3
 
-    # Validate Pair
-    for i in range(1, nretry):
-        res = lockdownd_validate_pair(lckd, root_ca_cert.as_pem(),
-                                      dev_cert.as_pem(),
-                                      host_cert.as_pem(),
-                                      host_id)
-        if res == "Success":
-            break
-
-    if res != "Success":
-        print "ValidatePair: %s" % res
-        return 1
-    
     # Pair
     for i in range(1, nretry):
         res = lockdownd_pair(lckd, root_ca_cert.as_pem(),
@@ -168,6 +155,19 @@ def main():
 
     if res != "Success":
         print "Pair: %s" % res
+        return 1
+
+    # Validate Pair
+    for i in range(1, nretry):
+        res = lockdownd_validate_pair(lckd, root_ca_cert.as_pem(),
+                                      dev_cert.as_pem(),
+                                      host_cert.as_pem(),
+                                      host_id)
+        if res == "Success":
+            break
+
+    if res != "Success":
+        print "ValidatePair: %s" % res
         return 1
 
     # Success
