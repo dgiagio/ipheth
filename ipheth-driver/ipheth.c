@@ -70,6 +70,7 @@
 #define IPHETH_ALT_INTFNUM      1
 
 #define IPHETH_CTRL_ENDP        0x00
+#define IPHETH_CTRL_BUF_SIZE	0x40
 #define IPHETH_CTRL_TIMEOUT     (5 * HZ)
 
 #define IPHETH_CMD_GET_MACADDR   0x00
@@ -96,6 +97,7 @@ struct ipheth_device {
 	struct urb *rx_urb;
 	unsigned char *tx_buf;
 	unsigned char *rx_buf;
+	unsigned char *ctrl_buf;
 	__u8 bulk_in;
 	__u8 bulk_out;
 	struct delayed_work carrier_work;
@@ -131,6 +133,7 @@ static int ipheth_alloc_urbs(struct ipheth_device *iphone)
 				  &rx_urb->transfer_dma);
 	if (rx_buf == NULL)
 		goto error;
+
 
 	iphone->tx_urb = tx_urb;
 	iphone->rx_urb = rx_urb;
@@ -231,7 +234,6 @@ static void ipheth_sndbulk_callback (struct urb *urb)
 static int ipheth_carrier_set(struct ipheth_device *dev)
 {
 	struct usb_device *udev = dev->udev;
-	char buf[1];
 	int retval;
 
 	if ((retval = usb_control_msg(udev, 
@@ -240,13 +242,13 @@ static int ipheth_carrier_set(struct ipheth_device *dev)
 				      0xc0, /* request type */
 				      0x00, /* value */
 				      0x02, /* index */
-				      buf, sizeof(buf),
+				      dev->ctrl_buf, IPHETH_CTRL_BUF_SIZE,
 				      IPHETH_CTRL_TIMEOUT)) < 0) {
 		err("%s: usb_control_msg: %d", __func__, retval);
 		return retval;
 	}
 
-	if (buf[0] == IPHETH_CARRIER_ON)
+	if (dev->ctrl_buf[0] == IPHETH_CARRIER_ON)
 		netif_carrier_on(dev->net);
 	else
 		netif_carrier_off(dev->net);
@@ -275,13 +277,18 @@ static int ipheth_get_macaddr(struct ipheth_device *dev)
 				 0xc0, /* request type */
 				 0x00, /* value */
 				 0x02, /* index */
-				 net->dev_addr,
-				 sizeof(net->dev_addr),
+				 dev->ctrl_buf,
+				 IPHETH_CTRL_BUF_SIZE,
 				 IPHETH_CTRL_TIMEOUT);
-	if (retval < 0)
+	if (retval < 0) {
 		err("%s: usb_control_msg: %d", __func__, retval);
-	else
+	} else if (retval < sizeof(net->dev_addr)) {
+		err("%s: usb_control_msg: short packet: %d bytes", __func__, retval);
+		retval = -EINVAL;
+	} else {
+		memcpy(net->dev_addr, dev->ctrl_buf, sizeof(net->dev_addr));
 		retval = 0;
+	}
 
 	return retval;
 }
@@ -427,7 +434,7 @@ static int ipheth_probe (struct usb_interface *intf,
 	if (!netdev)
 		return -ENOMEM;
 
-       netdev->netdev_ops = &ipheth_netdev_ops;
+	netdev->netdev_ops = &ipheth_netdev_ops;
 	netdev->watchdog_timeo = IPHETH_TX_TIMEOUT;
 
 	dev = netdev_priv(netdev);
@@ -454,6 +461,12 @@ static int ipheth_probe (struct usb_interface *intf,
 		retval = -ENODEV;
 		err("Unable to find endpoints");
 		goto err_endpoints;
+	}
+
+	dev->ctrl_buf = kmalloc(IPHETH_CTRL_BUF_SIZE, GFP_KERNEL);
+	if (dev->ctrl_buf == NULL) {
+		retval = -ENOMEM;
+		goto err_alloc_ctrl_buf;
 	}
 
 	if ((retval = ipheth_get_macaddr(dev)))
@@ -484,6 +497,8 @@ err_register_netdev:
 	ipheth_free_urbs(dev);
 err_alloc_urbs:
 err_get_macaddr:
+err_alloc_ctrl_buf:
+	kfree(dev->ctrl_buf);
 err_endpoints:
 	free_netdev(netdev);
 	return retval;
@@ -498,6 +513,7 @@ static void ipheth_disconnect(struct usb_interface *intf)
 		unregister_netdev(dev->net);
 		ipheth_unlink_urbs(dev);
 		ipheth_free_urbs(dev);
+		kfree(dev->ctrl_buf);
 		free_netdev(dev->net);
 	}
 	usb_set_intfdata(intf, NULL);
