@@ -1,9 +1,0 @@
-iPhone USB Ethernet Driver for Linux
-------------------------------------
-
-Copy ipheth-pair.py program to /usr/local/bin. If you prefer to copy it
-elsewhere, don't forget to update ipheth-modprobe.conf on ipheth-driver/ to
-reflect the new path.
-
-For more info: http://giagio.com/wiki/moin.cgi/iPhoneEthernetDriver
-
