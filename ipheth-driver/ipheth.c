@@ -79,6 +79,8 @@
 #define IPHETH_CARRIER_CHECK_TIMEOUT (1 * HZ)
 #define IPHETH_CARRIER_ON       0x04
 
+#define	ETHER_ADDR_LEN		6	/* length of an Ethernet address */
+
 static struct usb_device_id ipheth_table [] = {
        { USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH) },
 	{ USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH_3G) },
@@ -282,11 +284,11 @@ static int ipheth_get_macaddr(struct ipheth_device *dev)
 				 IPHETH_CTRL_TIMEOUT);
 	if (retval < 0) {
 		err("%s: usb_control_msg: %d", __func__, retval);
-	} else if (retval < sizeof(net->dev_addr)) {
+	} else if (retval < ETHER_ADDR_LEN) {
 		err("%s: usb_control_msg: short packet: %d bytes", __func__, retval);
 		retval = -EINVAL;
 	} else {
-		memcpy(net->dev_addr, dev->ctrl_buf, sizeof(net->dev_addr));
+		memcpy(net->dev_addr, dev->ctrl_buf, ETHER_ADDR_LEN);
 		retval = 0;
 	}
 
@@ -406,6 +408,7 @@ static struct ethtool_ops ops = {
 	.get_link = ipheth_ethtool_op_get_link
 };
 
+#ifdef HAVE_NET_DEVICE_OPS
 static const struct net_device_ops ipheth_netdev_ops = {
        .ndo_open = &ipheth_open,
        .ndo_stop = &ipheth_close,
@@ -413,6 +416,7 @@ static const struct net_device_ops ipheth_netdev_ops = {
        .ndo_tx_timeout = &ipheth_tx_timeout,
        .ndo_get_stats = &ipheth_stats,
 };
+#endif
 
 static int ipheth_probe (struct usb_interface *intf,
 			 const struct usb_device_id *id)
@@ -434,7 +438,15 @@ static int ipheth_probe (struct usb_interface *intf,
 	if (!netdev)
 		return -ENOMEM;
 
+#ifdef HAVE_NET_DEVICE_OPS
 	netdev->netdev_ops = &ipheth_netdev_ops;
+#else /* CONFIG_COMPAT_NET_DEV_OPS */
+	netdev->open = &ipheth_open;
+	netdev->stop = &ipheth_close;
+	netdev->hard_start_xmit = &ipheth_tx;
+	netdev->tx_timeout = &ipheth_tx_timeout;
+	netdev->get_stats = &ipheth_stats;
+#endif
 	netdev->watchdog_timeo = IPHETH_TX_TIMEOUT;
 
 	dev = netdev_priv(netdev);
