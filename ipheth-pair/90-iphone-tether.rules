@@ -1,13 +1,7 @@
 # udev rules for setting correct configuration and pairing on tethered iPhones
 ATTR{idVendor}!="05ac", GOTO="ipheth_rules_end"
 
-# Forces supported iPhones to use correct USB configuration
-SUBSYSTEM=="usb", ATTR{idVendor}=="05ac", ATTR{idProduct}=="1290", ACTION=="add", ATTR{bConfigurationValue}="3"
-SUBSYSTEM=="usb", ATTR{idVendor}=="05ac", ATTR{idProduct}=="1291", ACTION=="add", ATTR{bConfigurationValue}="3"
-SUBSYSTEM=="usb", ATTR{idVendor}=="05ac", ATTR{idProduct}=="1292", ACTION=="add", ATTR{bConfigurationValue}="4" 
-SUBSYSTEM=="usb", ATTR{idVendor}=="05ac", ATTR{idProduct}=="1293", ACTION=="add", ATTR{bConfigurationValue}="4"
-
 # Execute pairing program when appropriate
-ACTION=="add", SUBSYSTEM=="net", ID_USB_DRIVER=="ipheth", RUN+="ipheth-pair.py"
+ACTION=="add", SUBSYSTEM=="net", ID_USB_DRIVER=="ipheth", RUN+="ipheth-pair"
 
 LABEL="ipheth_rules_end"
