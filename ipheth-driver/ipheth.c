@@ -79,8 +79,6 @@
 #define IPHETH_CARRIER_CHECK_TIMEOUT (1 * HZ)
 #define IPHETH_CARRIER_ON       0x04
 
-#define	ETHER_ADDR_LEN		6	/* length of an Ethernet address */
-
 static struct usb_device_id ipheth_table [] = {
        { USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH) },
 	{ USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH_3G) },
@@ -284,11 +282,11 @@ static int ipheth_get_macaddr(struct ipheth_device *dev)
 				 IPHETH_CTRL_TIMEOUT);
 	if (retval < 0) {
 		err("%s: usb_control_msg: %d", __func__, retval);
-	} else if (retval < ETHER_ADDR_LEN) {
+	} else if (retval < ETH_ALEN) {
 		err("%s: usb_control_msg: short packet: %d bytes", __func__, retval);
 		retval = -EINVAL;
 	} else {
-		memcpy(net->dev_addr, dev->ctrl_buf, ETHER_ADDR_LEN);
+		memcpy(net->dev_addr, dev->ctrl_buf, ETH_ALEN);
 		retval = 0;
 	}
 
