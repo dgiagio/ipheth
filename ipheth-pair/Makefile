@@ -1,5 +1,5 @@
 all:
-	gcc -Wall -O2 ipheth-pair.c -o ipheth-pair -liphone
+	gcc -Wall -O2 ipheth-pair.c -o ipheth-pair -limobiledevice
 
 install:
 	install -m 0755 ipheth-pair /lib/udev/

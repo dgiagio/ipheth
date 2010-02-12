@@ -1,7 +1,7 @@
 /*
  *  Apple iPhone USB Ethernet pairing program
  *
- *  Copyright (c) 2009 Daniel Borca  All rights reserved.
+ *  Copyright (c) 2009, 2010 Daniel Borca  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,26 +22,25 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <libiphone/lockdown.h>
+#include <libimobiledevice/lockdown.h>
 
 
 int
 main(int argc, char **argv)
 {
     const char *myself = argv[0];
-    char *host_id = NULL;
-    char *uuid = NULL;
+    const char *uuid = NULL;
     int list = 0;
 
-    iphone_error_t rv;
-    iphone_device_t device;
+    idevice_error_t rv;
+    idevice_t device;
     lockdownd_client_t client;
 
-    while (--argc) {
+    while (--argc > 0) {
 	const char *p = *++argv;
 	if (!strcmp(p, "--help") || !strcmp(p, "-h")) {
-	    printf("usage: %s [--list] [--uuid UUID] [--host HOSTID]\n", myself);
-	    return 1;
+	    printf("usage: %s [--list] [--uuid UUID]\n", myself);
+	    return 0;
 	}
 	if (!strcmp(p, "--list") || !strcmp(p, "-l")) {
 	    list = !0;
@@ -56,15 +55,6 @@ main(int argc, char **argv)
 	    uuid = *++argv;
 	    continue;
 	}
-	if (!strcmp(p, "--host")) {
-	    if (argc < 2) {
-		fprintf(stderr, "%s: argument to '%s' is missing\n", myself, p);
-		return -1;
-	    }
-	    argc--;
-	    host_id = *++argv;
-	    continue;
-	}
     }
 
     if (list) {
@@ -72,65 +62,65 @@ main(int argc, char **argv)
 	int i, count;
 	char **devices;
 
-	rv = iphone_get_device_list(&devices, &count);
+	rv = idevice_get_device_list(&devices, &count);
 	if (rv || !count) {
-	    fprintf(stderr, "%s: no devices\n", myself);
+	    fprintf(stderr, "%s: %d: no devices\n", myself, rv);
 	    return -1;
 	}
 	for (i = 0; i < count; i++) {
 	    char *device_name = NULL;
-	    rv = iphone_device_new(&device, devices[i]);
+	    rv = idevice_new(&device, devices[i]);
 	    if (rv == 0) {
-		rv = lockdownd_client_new(device, &client);
+		rv = lockdownd_client_new(device, &client, "ipheth-pair");
 		if (rv == 0) {
 		    rv = lockdownd_get_device_name(client, &device_name);
 		    lockdownd_client_free(client);
 		}
-		iphone_device_free(device);
+		idevice_free(device);
 	    }
 	    printf("%s %s\n", devices[i], device_name ? device_name : "N/A");
 	    free(device_name);
-	    err |= rv;
+	    if (rv) {
+		err = rv;
+	    }
 	}
 
-	iphone_device_list_free(devices);
+	idevice_device_list_free(devices);
 	return err;
     }
 
-    rv = iphone_device_new(&device, uuid);
+    rv = idevice_new(&device, uuid);
     if (rv) {
-	fprintf(stderr, "%s: cannot get %s device\n", argv[0], uuid ? uuid : "default");
+	fprintf(stderr, "%s: %d: cannot get %s device\n", myself, rv, uuid ? uuid : "default");
 	return -1;
     }
-    rv = lockdownd_client_new(device, &client);
+    rv = lockdownd_client_new(device, &client, "ipheth-pair");
     if (rv) {
-	fprintf(stderr, "%s: cannot get lockdown\n", argv[0]);
-	iphone_device_free(device);
+	fprintf(stderr, "%s: %d: cannot get lockdown\n", myself, rv);
+	idevice_free(device);
 	return -1;
     }
-    if (host_id != NULL) {
-	/* lockdownd_client_new() already Pair'ed with stock host_id.
-	 * Redo Pair with this one, otherwise ValidatePair will fail.
-	 */
-	rv = lockdownd_pair(client, host_id);
+
+    /* Send NULL for lockdownd_pair_record and let the library generate it. */
+    rv = lockdownd_validate_pair(client, NULL);
+    if (rv) {
+	const char *verb = "Pair";
+	rv = lockdownd_pair(client, NULL);
+	if (rv == 0) {
+	    verb = "ValidatePair";
+	    rv = lockdownd_validate_pair(client, NULL);
+	}
 	if (rv) {
-	    fprintf(stderr, "%s: cannot Pair\n", argv[0]);
+	    fprintf(stderr, "%s: %d: cannot %s\n", myself, rv, verb);
 	    lockdownd_client_free(client);
-	    iphone_device_free(device);
+	    idevice_free(device);
 	    return -1;
 	}
-    }
-    rv = lockdownd_validate_pair(client, host_id);
-    if (rv) {
-	fprintf(stderr, "%s: cannot ValidatePair\n", argv[0]);
-	lockdownd_client_free(client);
-	iphone_device_free(device);
-	return -1;
     }
 
     /* Is it ok to say Goodbye? */
     lockdownd_client_free(client);
-    iphone_device_free(device);
+    idevice_free(device);
 
     return 0;
 }
