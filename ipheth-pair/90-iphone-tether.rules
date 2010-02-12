@@ -2,6 +2,6 @@
 ATTR{idVendor}!="05ac", GOTO="ipheth_rules_end"
 
 # Execute pairing program when appropriate
-ACTION=="add", SUBSYSTEM=="net", ID_USB_DRIVER=="ipheth", RUN+="ipheth-pair"
+ACTION=="add", SUBSYSTEM=="net", ENV{ID_USB_DRIVER}=="ipheth", SYMLINK+="iphone", RUN+="ipheth-pair"
 
 LABEL="ipheth_rules_end"
