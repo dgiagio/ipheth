@@ -62,6 +62,7 @@
 
 #define IPHETH_USBINTF_CLASS    255
 #define IPHETH_USBINTF_SUBCLASS 253
+#define IPHETH_USBINTF_PROTO    1
 
 #define IPHETH_BUF_SIZE         1516
 #define IPHETH_TX_TIMEOUT       (5 * HZ)
@@ -80,9 +81,18 @@
 #define IPHETH_CARRIER_ON       0x04
 
 static struct usb_device_id ipheth_table[] = {
-	{ USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH) },
-	{ USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH_3G) },
-	{ USB_DEVICE(USB_VENDOR_APPLE, USB_PRODUCT_IPHETH_3GS) },
+	{ USB_DEVICE_AND_INTERFACE_INFO(
+		USB_VENDOR_APPLE, USB_PRODUCT_IPHETH,
+		IPHETH_USBINTF_CLASS, IPHETH_USBINTF_SUBCLASS,
+		IPHETH_USBINTF_PROTO) },
+	{ USB_DEVICE_AND_INTERFACE_INFO(
+		USB_VENDOR_APPLE, USB_PRODUCT_IPHETH_3G,
+		IPHETH_USBINTF_CLASS, IPHETH_USBINTF_SUBCLASS,
+		IPHETH_USBINTF_PROTO) },
+	{ USB_DEVICE_AND_INTERFACE_INFO(
+		USB_VENDOR_APPLE, USB_PRODUCT_IPHETH_3GS,
+		IPHETH_USBINTF_CLASS, IPHETH_USBINTF_SUBCLASS,
+		IPHETH_USBINTF_PROTO) },
 	{ }
 };
 MODULE_DEVICE_TABLE(usb, ipheth_table);
@@ -433,11 +443,6 @@ static int ipheth_probe(struct usb_interface *intf,
 	struct net_device *netdev;
 	int i;
 	int retval;
-
-	/* Ensure we are probing the right interface */
-	if (intf->cur_altsetting->desc.bInterfaceClass != IPHETH_USBINTF_CLASS ||
-	    intf->cur_altsetting->desc.bInterfaceSubClass != IPHETH_USBINTF_SUBCLASS)
-		return -ENODEV;
 
 	netdev = alloc_etherdev(sizeof(struct ipheth_device));
 	if (!netdev)
