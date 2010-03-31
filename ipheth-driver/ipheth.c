@@ -415,11 +415,11 @@ static struct ethtool_ops ops = {
 
 #ifdef HAVE_NET_DEVICE_OPS
 static const struct net_device_ops ipheth_netdev_ops = {
-       .ndo_open = &ipheth_open,
-       .ndo_stop = &ipheth_close,
-       .ndo_start_xmit = &ipheth_tx,
-       .ndo_tx_timeout = &ipheth_tx_timeout,
-       .ndo_get_stats = &ipheth_stats,
+	.ndo_open = &ipheth_open,
+	.ndo_stop = &ipheth_close,
+	.ndo_start_xmit = &ipheth_tx,
+	.ndo_tx_timeout = &ipheth_tx_timeout,
+	.ndo_get_stats = &ipheth_stats,
 };
 #endif
 
