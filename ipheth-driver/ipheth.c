@@ -171,7 +171,7 @@ static void ipheth_free_urbs(struct ipheth_device *iphone)
 	usb_free_urb(iphone->tx_urb);
 }
 
-static void ipheth_unlink_urbs(struct ipheth_device *dev)
+static void ipheth_kill_urbs(struct ipheth_device *dev)
 {
 	usb_kill_urb(dev->tx_urb);
 	usb_kill_urb(dev->rx_urb);
@@ -536,7 +536,7 @@ static void ipheth_disconnect(struct usb_interface *intf)
 	dev = usb_get_intfdata(intf);
 	if (dev != NULL) {
 		unregister_netdev(dev->net);
-		ipheth_unlink_urbs(dev);
+		ipheth_kill_urbs(dev);
 		ipheth_free_urbs(dev);
 		kfree(dev->ctrl_buf);
 		free_netdev(dev->net);
