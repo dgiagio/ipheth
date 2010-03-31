@@ -238,8 +238,8 @@ static void ipheth_sndbulk_callback(struct urb *urb)
 	    urb->status != -ESHUTDOWN)
 		err("%s: urb status: %d", __func__, urb->status);
 
-	netif_wake_queue(dev->net);
 	dev_kfree_skb_irq(dev->tx_skb);
+	netif_wake_queue(dev->net);
 }
 
 static int ipheth_carrier_set(struct ipheth_device *dev)
