@@ -107,8 +107,8 @@ struct ipheth_device {
 	unsigned char *tx_buf;
 	unsigned char *rx_buf;
 	unsigned char *ctrl_buf;
-	__u8 bulk_in;
-	__u8 bulk_out;
+	u8 bulk_in;
+	u8 bulk_out;
 	struct delayed_work carrier_work;
 };
 
