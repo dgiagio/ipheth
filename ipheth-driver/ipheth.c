@@ -335,15 +335,14 @@ static int ipheth_open(struct net_device *net)
 
 	retval = ipheth_carrier_set(dev);
 	if (retval)
-		goto error;
+		return retval;
 
 	retval = ipheth_rx_submit(dev, GFP_KERNEL);
 	if (retval)
-		goto error;
+		return retval;
 
 	schedule_delayed_work(&dev->carrier_work, IPHETH_CARRIER_CHECK_TIMEOUT);
 	netif_start_queue(net);
-error:
 	return retval;
 }
 
@@ -367,7 +366,7 @@ static int ipheth_tx(struct sk_buff *skb, struct net_device *net)
 		err("%s: skb too large: %d bytes", __func__, skb->len);
 		dev->stats.tx_dropped++;
 		dev_kfree_skb_irq(skb);
-		goto exit;
+		return NETDEV_TX_OK;
 	}
 
 	memcpy(dev->tx_buf, skb->data, skb->len);
@@ -395,7 +394,7 @@ static int ipheth_tx(struct sk_buff *skb, struct net_device *net)
 		dev->stats.tx_bytes += skb->len;
 		netif_stop_queue(net);
 	}
-exit:
+
 	return NETDEV_TX_OK;
 }
 
