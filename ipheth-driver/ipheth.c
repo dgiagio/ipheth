@@ -80,7 +80,7 @@
 #define IPHETH_CMD_GET_MACADDR   0x00
 #define IPHETH_CMD_CARRIER_CHECK 0x45
 
-#define IPHETH_CARRIER_CHECK_TIMEOUT (1 * HZ)
+#define IPHETH_CARRIER_CHECK_TIMEOUT round_jiffies_relative(1 * HZ)
 #define IPHETH_CARRIER_ON       0x04
 
 static struct usb_device_id ipheth_table[] = {
