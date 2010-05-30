@@ -54,6 +54,10 @@
 #include <linux/usb.h>
 #include <linux/workqueue.h>
 
+#ifndef SET_NETDEV_DEVTYPE
+#define SET_NETDEV_DEVTYPE(net, devtype)	((net)->dev.type = (devtype))
+#endif
+
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_PRODUCT_IPHONE      0x1290
 #define USB_PRODUCT_IPHONE_3G   0x1292
@@ -433,6 +437,10 @@ static const struct net_device_ops ipheth_netdev_ops = {
 };
 #endif
 
+static struct device_type ipheth_type = {
+	.name	= "wwan",
+};
+
 static int ipheth_probe(struct usb_interface *intf,
 			const struct usb_device_id *id)
 {
@@ -458,6 +466,7 @@ static int ipheth_probe(struct usb_interface *intf,
 	netdev->get_stats = &ipheth_stats;
 #endif
 	netdev->watchdog_timeo = IPHETH_TX_TIMEOUT;
+	strcpy(netdev->name, "wwan%d");
 
 	dev = netdev_priv(netdev);
 	dev->udev = udev;
@@ -507,6 +516,7 @@ static int ipheth_probe(struct usb_interface *intf,
 
 	SET_NETDEV_DEV(netdev, &intf->dev);
 	SET_ETHTOOL_OPS(netdev, &ops);
+	SET_NETDEV_DEVTYPE(netdev, &ipheth_type);
 
 	retval = register_netdev(netdev);
 	if (retval) {
