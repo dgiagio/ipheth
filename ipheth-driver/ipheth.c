@@ -54,6 +54,9 @@
 #include <linux/usb.h>
 #include <linux/workqueue.h>
 
+#undef NET_IP_ALIGN
+#define NET_IP_ALIGN            2
+
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,34))
 #define usb_alloc_coherent      usb_buffer_alloc
 #define usb_free_coherent       usb_buffer_free
