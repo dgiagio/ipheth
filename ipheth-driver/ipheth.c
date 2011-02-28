@@ -44,6 +44,7 @@
  */
 
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/errno.h>
 #include <linux/init.h>
 #include <linux/slab.h>
