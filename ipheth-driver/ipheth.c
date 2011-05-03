@@ -55,9 +55,6 @@
 #include <linux/usb.h>
 #include <linux/workqueue.h>
 
-#undef NET_IP_ALIGN
-#define NET_IP_ALIGN            2
-
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,34))
 #define usb_alloc_coherent      usb_buffer_alloc
 #define usb_free_coherent       usb_buffer_free
@@ -74,6 +71,7 @@
 #define IPHETH_USBINTF_PROTO    1
 
 #define IPHETH_BUF_SIZE         1516
+#define IPHETH_IP_ALIGN         2       /* padding at front of URB */
 #define IPHETH_TX_TIMEOUT       (5 * HZ)
 
 #define IPHETH_INTFNUM          2
@@ -216,18 +214,21 @@ static void ipheth_rcvbulk_callback(struct urb *urb)
 		return;
 	}
 
-	len = urb->actual_length;
-	buf = urb->transfer_buffer;
+	if (urb->actual_length <= IPHETH_IP_ALIGN) {
+		dev->net->stats.rx_length_errors++;
+		return;
+	}
+	len = urb->actual_length - IPHETH_IP_ALIGN;
+	buf = urb->transfer_buffer + IPHETH_IP_ALIGN;
 
-	skb = dev_alloc_skb(NET_IP_ALIGN + len);
+	skb = dev_alloc_skb(len);
 	if (!skb) {
 		err("%s: dev_alloc_skb: -ENOMEM", __func__);
 		dev->stats.rx_dropped++;
 		return;
 	}
 
-	skb_reserve(skb, NET_IP_ALIGN);
-	memcpy(skb_put(skb, len), buf + NET_IP_ALIGN, len - NET_IP_ALIGN);
+	memcpy(skb_put(skb, len), buf, len);
 	skb->dev = dev->net;
 	skb->protocol = eth_type_trans(skb, dev->net);
 
