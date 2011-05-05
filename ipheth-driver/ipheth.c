@@ -215,7 +215,7 @@ static void ipheth_rcvbulk_callback(struct urb *urb)
 	}
 
 	if (urb->actual_length <= IPHETH_IP_ALIGN) {
-		dev->net->stats.rx_length_errors++;
+		dev->stats.rx_length_errors++;
 		return;
 	}
 	len = urb->actual_length - IPHETH_IP_ALIGN;
