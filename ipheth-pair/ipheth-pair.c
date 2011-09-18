@@ -1,7 +1,7 @@
 /*
  *  Apple iPhone USB Ethernet pairing program
  *
- *  Copyright (c) 2009, 2010 Daniel Borca  All rights reserved.
+ *  Copyright (c) 2009, 2010, 2011 Daniel Borca  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,7 @@ main(int argc, char **argv)
     const char *myself = argv[0];
     const char *uuid = NULL;
     int list = 0;
+    int oldc = 0;
 
     idevice_error_t rv;
     idevice_t device;
@@ -39,11 +40,15 @@ main(int argc, char **argv)
     while (--argc > 0) {
 	const char *p = *++argv;
 	if (!strcmp(p, "--help") || !strcmp(p, "-h")) {
-	    printf("usage: %s [--list] [--uuid UUID]\n", myself);
+	    printf("usage: %s [--list] [--uuid UUID] [--oldc]\n", myself);
 	    return 0;
 	}
 	if (!strcmp(p, "--list") || !strcmp(p, "-l")) {
 	    list = !0;
+	    break;
+	}
+	if (!strcmp(p, "--oldc") || !strcmp(p, "-o")) {
+	    oldc = !0;
 	    break;
 	}
 	if (!strcmp(p, "--uuid") || !strcmp(p, "-u")) {
@@ -94,7 +99,8 @@ main(int argc, char **argv)
 	fprintf(stderr, "%s: %d: cannot get %s device\n", myself, rv, uuid ? uuid : "default");
 	return -1;
     }
-    rv = lockdownd_client_new(device, &client, "ipheth-pair");
+    rv = oldc ? lockdownd_client_new(device, &client, "ipheth-pair"):
+		lockdownd_client_new_with_handshake(device, &client, "ipheth-pair"); /* TrustedHostAttached */
     if (rv) {
 	fprintf(stderr, "%s: %d: cannot get lockdown\n", myself, rv);
 	idevice_free(device);
