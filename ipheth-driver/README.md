@@ -1,5 +1,4 @@
-iPhone USB Ethernet Driver for Linux
-------------------------------------
+# iPhone USB Ethernet Driver for Linux
 
 Compile and install the driver (usually need to be root):
 
