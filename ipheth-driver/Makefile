@@ -1,6 +1,6 @@
 obj-m += ipheth.o
 
-KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+KERNEL_DIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
 all:
