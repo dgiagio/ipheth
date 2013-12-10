@@ -60,6 +60,15 @@
 #define usb_free_coherent       usb_buffer_free
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#define HAVE_NET_DEVICE_OPS     1
+#endif
+
+#ifndef err
+#define err(format, arg...)					\
+	printk(KERN_ERR KBUILD_MODNAME ": " format "\n", ##arg)
+#endif
+
 #define USB_VENDOR_APPLE        0x05ac
 #define USB_PRODUCT_IPHONE      0x1290
 #define USB_PRODUCT_IPHONE_3G   0x1292
