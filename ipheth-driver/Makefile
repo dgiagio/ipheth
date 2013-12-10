@@ -1,5 +1,9 @@
 obj-m += ipheth.o
 
+ifneq ($(KERNEL_DIR),)
+KERNELDIR = $(KERNEL_DIR)
+endif
+
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 
